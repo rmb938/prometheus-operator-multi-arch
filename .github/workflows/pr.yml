@@ -47,5 +47,5 @@ jobs:
           GIT_VERSION: ${{ matrix.version }}
         if: matrix.arch == 'arm'
         run: |
-          docker build -t docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION-armv7 --build-arg ARCH=armv7 --build-arg OS=linux .
-          docker build -t docker.io/rmb938/prometheus-config-reloader-multi-arch:$GIT_VERSION-armv7 --build-arg ARCH=armv7 --build-arg OS=linux -f cmd/prometheus-config-reloader/Dockerfile .
+          docker build -t docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION-$ARCH --build-arg ARCH=armv7 --build-arg OS=linux .
+          docker build -t docker.io/rmb938/prometheus-config-reloader-multi-arch:$GIT_VERSION-$ARCH --build-arg ARCH=armv7 --build-arg OS=linux -f cmd/prometheus-config-reloader/Dockerfile .
