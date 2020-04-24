@@ -64,6 +64,7 @@ jobs:
 
       
   push-manifest:
+    needs: build-push
     name: Docker Push Manifest
     strategy:
       matrix:
