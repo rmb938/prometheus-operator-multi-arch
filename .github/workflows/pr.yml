@@ -1,0 +1,51 @@
+name: PR Docker Build
+
+on:
+  - pull_request
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        arch:
+          - amd64
+          - arm
+        version:
+          - v0.37.0
+          - v0.38.0
+          - v0.38.1
+
+    name: PR Docker Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          repository: coreos/prometheus-operator
+          ref: ${{ matrix.version }}
+
+      - name: Build Binaries
+        env:
+          ARCH: ${{ matrix.arch }}
+          GIT_VERSION: ${{ matrix.version }}
+        run: |
+          VERSION=${GIT_VERSION:1}
+          GOOS=linux GOARCH=$ARCH CGO_ENABLED=0 go build -mod=vendor -ldflags="-s -X github.com/coreos/prometheus-operator/pkg/version.Version=$VERSION" -o operator ./cmd/operator/main.go
+          GOOS=linux GOARCH=$ARCH CGO_ENABLED=0 go build -mod=vendor -ldflags="-s -X github.com/coreos/prometheus-operator/pkg/version.Version=$VERSION" -o prometheus-config-reloader ./cmd/prometheus-config-reloader/main.go
+
+      - name: Build Docker
+        env:
+          ARCH: ${{ matrix.arch }}
+          GIT_VERSION: ${{ matrix.version }}
+        if: matrix.arch != 'arm'
+        run: |
+          docker build -t docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION-$ARCH --build-arg ARCH=$ARCH --build-arg OS=linux .
+          docker build -t docker.io/rmb938/prometheus-config-reloader-multi-arch:$GIT_VERSION-$ARCH --build-arg ARCH=$ARCH --build-arg OS=linux -f cmd/prometheus-config-reloader/Dockerfile .
+
+      - name: Build Docker ARM
+        env:
+          ARCH: ${{ matrix.arch }}
+          GIT_VERSION: ${{ matrix.version }}
+        if: matrix.arch == 'arm'
+        run: |
+          docker build -t docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION-armv7 --build-arg ARCH=armv7 --build-arg OS=linux .
+          docker build -t docker.io/rmb938/prometheus-config-reloader-multi-arch:$GIT_VERSION-armv7 --build-arg ARCH=armv7 --build-arg OS=linux -f cmd/prometheus-config-reloader/Dockerfile .

@@ -1,0 +1,86 @@
+name: Docker Build
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-push:
+    strategy:
+      matrix:
+        arch:
+          - amd64
+          - arm
+        version:
+          - v0.37.0
+          - v0.38.0
+          - v0.38.1
+
+    name: Docker Build and Push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          repository: coreos/prometheus-operator
+          ref: ${{ matrix.version }}
+
+      - name: Build Binaries
+        env:
+          ARCH: ${{ matrix.arch }}
+          GIT_VERSION: ${{ matrix.version }}
+        run: |
+          VERSION=${GIT_VERSION:1}
+          GOOS=linux GOARCH=$ARCH CGO_ENABLED=0 go build -mod=vendor -ldflags="-s -X github.com/coreos/prometheus-operator/pkg/version.Version=$VERSION" -o operator ./cmd/operator/main.go
+          GOOS=linux GOARCH=$ARCH CGO_ENABLED=0 go build -mod=vendor -ldflags="-s -X github.com/coreos/prometheus-operator/pkg/version.Version=$VERSION" -o prometheus-config-reloader ./cmd/prometheus-config-reloader/main.go
+
+      - name: Build Docker
+        env:
+          ARCH: ${{ matrix.arch }}
+          GIT_VERSION: ${{ matrix.version }}
+        if: matrix.arch != 'arm'
+        run: |
+          docker build -t docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION-$ARCH --build-arg ARCH=$ARCH --build-arg OS=linux .
+          docker build -t docker.io/rmb938/prometheus-config-reloader-multi-arch:$GIT_VERSION-$ARCH --build-arg ARCH=$ARCH --build-arg OS=linux -f cmd/prometheus-config-reloader/Dockerfile .
+
+      - name: Build Docker ARM
+        env:
+          ARCH: ${{ matrix.arch }}
+          GIT_VERSION: ${{ matrix.version }}
+        if: matrix.arch == 'arm'
+        run: |
+          docker build -t docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION-armv7 --build-arg ARCH=armv7 --build-arg OS=linux .
+          docker build -t docker.io/rmb938/prometheus-config-reloader-multi-arch:$GIT_VERSION-armv7 --build-arg ARCH=armv7 --build-arg OS=linux -f cmd/prometheus-config-reloader/Dockerfile .
+
+      - name: Docker Publish
+        env:
+          TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
+          USER: ${{ secrets.DOCKER_HUB_USER }}
+          ARCH: ${{ matrix.arch }}
+          GIT_VERSION: ${{ matrix.version }}
+        run: |
+          echo $TOKEN | docker login docker.pkg.github.com -u $USER --password-stdin
+          docker push docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION-$ARCH
+
+      
+  push-manifest:
+    name: Docker Push Manifest
+    strategy:
+      matrix:
+        version:
+          - v0.37.0
+          - v0.38.0
+          - v0.38.1
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Push Manifest
+        env:
+          TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
+          USER: ${{ secrets.DOCKER_HUB_USER }}
+          GIT_VERSION: ${{ matrix.version }}
+        run: |
+          echo $TOKEN | docker login docker.pkg.github.com -u $USER --password-stdin
+          DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create -a "docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION" "docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION-am64" "docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION-armv7"
+          DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm "docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION" "docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION-armv7"
+          DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push "docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION"
