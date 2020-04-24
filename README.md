@@ -10,13 +10,13 @@ Images following the same versioning as the upstream repo.
 ### Operator
 
 ```
-docker pull docker.io/rmb938/prometheus-operator-multi-arch:$VERSION-$ARCH
+docker pull docker.io/rmb938/prometheus-operator-multi-arch:$VERSION
 ```
 
 ### Prometheus Config Reloader
 
 ```
-docker pull docker.io/rmb938/prometheus-config-reloader-multi-arch:$VERSION-$ARCH
+docker pull docker.io/rmb938/prometheus-config-reloader-multi-arch:$VERSION
 ```
 
 ## Supported Architectures 
