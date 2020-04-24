@@ -59,7 +59,7 @@ jobs:
           ARCH: ${{ matrix.arch }}
           GIT_VERSION: ${{ matrix.version }}
         run: |
-          echo $TOKEN | docker login docker.pkg.github.com -u $USER --password-stdin
+          echo $TOKEN | docker login -u $USER --password-stdin
           docker push docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION-$ARCH
 
       
@@ -81,7 +81,7 @@ jobs:
           USER: ${{ secrets.DOCKER_HUB_USER }}
           GIT_VERSION: ${{ matrix.version }}
         run: |
-          echo $TOKEN | docker login docker.pkg.github.com -u $USER --password-stdin
+          echo $TOKEN | docker login -u $USER --password-stdin
           DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create -a "docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION" "docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION-am64" "docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION-armv7"
           DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm "docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION" "docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION-armv7"
           DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push "docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION"
