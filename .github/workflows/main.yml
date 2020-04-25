@@ -12,6 +12,7 @@ jobs:
         arch:
           - amd64
           - arm
+          - arm64
         version:
           - v0.37.0
           - v0.38.0
@@ -83,10 +84,12 @@ jobs:
           GIT_VERSION: ${{ matrix.version }}
         run: |
           echo $TOKEN | docker login -u $USER --password-stdin
-          DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create -a "docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION" "docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION-amd64" "docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION-arm"
+          DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create -a "docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION" "docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION-amd64" "docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION-arm" "docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION-arm64"
           DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm "docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION" "docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION-arm"
+          DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm64 "docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION" "docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION-arm64"
           DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push "docker.io/rmb938/prometheus-operator-multi-arch:$GIT_VERSION"
 
-          DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create -a "docker.io/rmb938/prometheus-config-reloader-multi-arch:$GIT_VERSION" "docker.io/rmb938/prometheus-config-reloader-multi-arch:$GIT_VERSION-amd64" "docker.io/rmb938/prometheus-config-reloader-multi-arch:$GIT_VERSION-arm"
+          DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create -a "docker.io/rmb938/prometheus-config-reloader-multi-arch:$GIT_VERSION" "docker.io/rmb938/prometheus-config-reloader-multi-arch:$GIT_VERSION-amd64" "docker.io/rmb938/prometheus-config-reloader-multi-arch:$GIT_VERSION-arm" "docker.io/rmb938/prometheus-config-reloader-multi-arch:$GIT_VERSION-arm64"
           DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm "docker.io/rmb938/prometheus-config-reloader-multi-arch:$GIT_VERSION" "docker.io/rmb938/prometheus-config-reloader-multi-arch:$GIT_VERSION-arm"
+          DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm64 "docker.io/rmb938/prometheus-config-reloader-multi-arch:$GIT_VERSION" "docker.io/rmb938/prometheus-config-reloader-multi-arch:$GIT_VERSION-arm64"
           DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push "docker.io/rmb938/prometheus-config-reloader-multi-arch:$GIT_VERSION"

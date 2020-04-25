@@ -22,6 +22,7 @@ docker pull docker.io/rmb938/prometheus-config-reloader-multi-arch:$VERSION
 ## Supported Architectures 
 
 * amd64
-* arm (arv7/armfh) - Raspberry Pi Compatible
+* arm (arv7/armfh) - Tested on Rasbian Buster
+* arm64 - Tested on Ubuntu 20.04 Raspberry Pi 
 
 To request other architectures please make an issue or open a pull requiest. 
