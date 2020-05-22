@@ -1,6 +1,8 @@
 # prometheus-operator-multi-arch
 Multi-Arch Images for https://github.com/coreos/prometheus-operator
 
+**This repo is no longer maintained, Prometheus operator since version 0.39.0 now has official support for arm and arm64**
+
 ## Versioning
 
 Images following the same versioning as the upstream repo.
